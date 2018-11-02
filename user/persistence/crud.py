@@ -1,3 +1,4 @@
+import falcon
 from __future__ import print_function
 
 import mysql.connector
@@ -7,175 +8,177 @@ from mysql.connector import errorcode
 DB_NAME = 'letsgo'
 TB_NAME = 'USER'
 
-def update(user):
-    """update item by param"""
-    try:
-        conn = mysql.connector.connect(host='localhost', 
-                                       database='letsgo', 
-                                       user='root', 
-                                       password='root')
+class Crud():
+
+    def on_get(self, req, resp):
+        resp.body = 'Deu tudo certo'
+        resp.status = falcon.HTTP_200
+
+    def update(self, user):
+        """update item by param"""
+        try:
+            conn = mysql.connector.connect(host='localhosst', 
+                                        database='letsgo', 
+                                        user='root', 
+                                        password='root')
+            
+            if conn.is_connected():
+                print("Connected to MySql Databae: {} \n".format(DB_NAME), end='')
+                cursor = conn.cursor()
+
+                param = self.mountSql(user)
+
+                if not param:
+                    sql = (" UPDATE USER(NAME = %(nome)s, PASSWORD=%(senha)s, PHONE=%(phone)s) where 1=1 " + param + ";")
+                    print(sql)
+                    cursor.execute(sql)
+                    conn.commit()
+
+                cursor.close()
+
+        except ValueError as err:
+            print(err)
         
-        if conn.is_connected():
-            print("Connected to MySql Databae: {} \n".format(DB_NAME), end='')
-            cursor = conn.cursor()
+        finally:
+            conn.close()
+            print('\n Database desconnected \n')
 
-            param = mountSql(user)
+    def delete(self, user):
+        """delete item by param"""
+        try:
+            conn = mysql.connector.connect(host='localhost', 
+                                        database='letsgo', 
+                                        user='root', 
+                                        password='root')
+            
+            if conn.is_connected():
+                print("Connected to MySql Databae: {} \n".format(DB_NAME), end='')
+                cursor = conn.cursor()
 
-            if not param:
-                sql = (" UPDATE USER(NAME = %(nome)s, PASSWORD=%(senha)s, PHONE=%(phone)s) where 1=1 " + param + ";")
+                param = self.mountSql(user)
+
+                if not param:
+                    sql = (" DELETE  FROM USER where 1=1 " + param + ";")
+                    print(sql)
+                    cursor.execute(sql)
+                    conn.commit()
+
+                cursor.close()
+
+        except ValueError as err:
+            print(err)
+        
+        finally:
+            conn.close()
+            print('\n Database desconnected \n')
+
+
+    def queryByParam(self, user):
+        """ get all row by param """
+        try:
+            conn = mysql.connector.connect(host='localhost', 
+                                        database='letsgo', 
+                                        user='root', 
+                                        password='root')
+            
+            if conn.is_connected():
+                print("Connected to MySql Databae: {} \n".format(DB_NAME), end='')
+                cursor = conn.cursor()
+
+                param = self.mountSql(user)
+
+                sql = (" SELECT * FROM USER where 1=1 " + param + ";")
+
                 print(sql)
+
                 cursor.execute(sql)
-                conn.commit()
 
-            cursor.close()
-
-    except ValueError as err:
-        print(err)
-    
-    finally:
-        conn.close()
-        print('\n Database desconnected \n')
-
-def delete(user):
-    """delete item by param"""
-    try:
-        conn = mysql.connector.connect(host='localhost', 
-                                       database='letsgo', 
-                                       user='root', 
-                                       password='root')
-        
-        if conn.is_connected():
-            print("Connected to MySql Databae: {} \n".format(DB_NAME), end='')
-            cursor = conn.cursor()
-
-            param = mountSql(user)
-
-            if not param:
-                sql = (" DELETE  FROM USER where 1=1 " + param + ";")
-                print(sql)
-                cursor.execute(sql)
-                conn.commit()
-
-            cursor.close()
-
-    except ValueError as err:
-        print(err)
-    
-    finally:
-        conn.close()
-        print('\n Database desconnected \n')
-
-
-def queryByParam(user):
-    """ get all row by param """
-    try:
-        conn = mysql.connector.connect(host='localhost', 
-                                       database='letsgo', 
-                                       user='root', 
-                                       password='root')
-        
-        if conn.is_connected():
-            print("Connected to MySql Databae: {} \n".format(DB_NAME), end='')
-            cursor = conn.cursor()
-
-            param = mountSql(user)
-
-            sql = (" SELECT * FROM USER where 1=1 " + param + ";")
-
-            print(sql)
-
-            cursor.execute(sql)
-
-            row = cursor.fetchone()
-
-            while row is not None:
-                print('\n{}'.format(row), end='')
                 row = cursor.fetchone()
 
-            cursor.close()
+                while row is not None:
+                    print('\n{}'.format(row), end='')
+                    row = cursor.fetchone()
 
-    except ValueError as err:
-        print(err)
-    
-    finally:
-        conn.close()
-        print('\n Database desconnected \n')
+                cursor.close()
 
-def queryAll():
-    """ get all row from table """
-    try:
-        conn = mysql.connector.connect(host='localhost', 
-                                       database='letsgo', 
-                                       user='root', 
-                                       password='root')
+        except ValueError as err:
+            print(err)
         
-        if conn.is_connected():
-            print("Connected to MySql Databae: {} \n".format(DB_NAME), end='')
-            cursor = conn.cursor()
+        finally:
+            conn.close()
+            print('\n Database desconnected \n')
 
-            sql = (" SELECT * FROM USER;")
+    def queryAll(self):
+        """ get all row from table """
+        try:
+            conn = mysql.connector.connect(host='localhost', 
+                                        database='letsgo', 
+                                        user='root', 
+                                        password='root')
+            
+            if conn.is_connected():
+                print("Connected to MySql Databae: {} \n".format(DB_NAME), end='')
+                cursor = conn.cursor()
 
-            cursor.execute(sql)
+                sql = (" SELECT * FROM USER;")
 
-            row = cursor.fetchone()
+                cursor.execute(sql)
 
-            while row is not None:
-                print('\n{}'.format(row), end='')
                 row = cursor.fetchone()
 
-            cursor.close()
+                while row is not None:
+                    print('\n{}'.format(row), end='')
+                    row = cursor.fetchone()
 
-    except ValueError as err:
-        print(err)
-    
-    finally:
-        conn.close()
-        print('\n Database desconnected \n')
+                cursor.close()
 
-def insert(user):
-    """ Insert new user """
-    try:
-        conn = mysql.connector.connect(host='localhost', 
-                                       database='letsgo', 
-                                       user='root', 
-                                       password='root')
+        except ValueError as err:
+            print(err)
         
-        if conn.is_connected():
-            print("Connected to MySql Databae: {} \n".format(DB_NAME), end='')
-            cursor = conn.cursor()
+        finally:
+            conn.close()
+            print('\n Database desconnected \n')
 
-            sql = (" INSERT INTO USER "
-                " (NAME, PASSWORD, PHONE, PROFILE_IMAGE_PATH ) "
-                " VALUES "
-                " (%(nome)s, %(senha)s, %(phone)s, %(image)s) ")
+    def insert(self, user):
+        """ Insert new user """
+        try:
+            conn = mysql.connector.connect(host='localhost', 
+                                        database='letsgo', 
+                                        user='root', 
+                                        password='root')
+            
+            if conn.is_connected():
+                print("Connected to MySql Databae: {} \n".format(DB_NAME), end='')
+                cursor = conn.cursor()
 
-            cursor.execute(sql, user)
+                sql = (" INSERT INTO USER "
+                    " (NAME, PASSWORD, PHONE, PROFILE_IMAGE_PATH ) "
+                    " VALUES "
+                    " (%(nome)s, %(senha)s, %(phone)s, %(image)s) ")
 
-            conn.commit()
+                cursor.execute(sql, user)
 
-            cursor.close()
+                conn.commit()
 
-    except ValueError as err:
-        print(err)
-    
-    finally:
-        conn.close()
-        print('Database desconnected \n')
+                cursor.close()
 
-def mountSql(user):
-    param = ""
+        except ValueError as err:
+            print(err)
+        
+        finally:
+            conn.close()
+            print('Database desconnected \n')
 
-    if  user['id']:
-        param = param + " and ID = " + user['id'] + " "
-    if  user['nome']:
-        param = param + " and NAME = '" +user['nome'] + "' "
-    if  user['senha']:
-        param = param + " and PASSWORD = '" + user['senha'] + "' "
-    if  user['phone']:
-        param = param + " and PHONE = '" + user['phone'] + "' "
-    
-    return param
+    def mountSql(self, user):
+        param = ""
 
-if __name__=='__main__':
-    user = json.loads('{"id": "2", "nome": "", "senha": "", "phone": "",  "image": ""}')
-    queryAll()
+        if  user['id']:
+            param = param + " and ID = " + user['id'] + " "
+        if  user['nome']:
+            param = param + " and NAME = '" +user['nome'] + "' "
+        if  user['senha']:
+            param = param + " and PASSWORD = '" + user['senha'] + "' "
+        if  user['phone']:
+            param = param + " and PHONE = '" + user['phone'] + "' "
+        
+        return param
